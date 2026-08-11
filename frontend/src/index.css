@@ -1,4 +1,55 @@
+:root {
+  --canvas: #0f0e0d;
+  --surface: #171615;
+  --surface-raised: #201f1d;
+  --border: #302e2b;
+  --border-soft: #262421;
+  --ink: #ede9e4;
+  --ink-muted: #948e85;
+  --ink-faint: #605b54;
+
+  --priority-high: #e85d5d;
+  --priority-medium: #e8a03d;
+  --priority-low: #6fa88a;
+
+  --status-open: #8ea6c9;
+  --status-in-progress: #e8a03d;
+  --status-closed: #6fa88a;
+
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Consolas, monospace;
+
+  --radius-panel: 10px;
+  --radius-control: 6px;
+  --radius-badge: 2px;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  color-scheme: light dark;
+  background: var(--canvas);
+  background-image: radial-gradient(circle at 20% -10%, rgba(232, 160, 61, 0.05), transparent 45%);
+  color: var(--ink);
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--priority-medium);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
 }

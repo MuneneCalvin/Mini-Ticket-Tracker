@@ -48,11 +48,8 @@ function App() {
 
   useEffect(() => {
     loadTickets();
-  }, [loadTickets]);
-
-  useEffect(() => {
     loadStats();
-  }, [loadStats, tickets]);
+  }, [loadTickets, loadStats]);
 
   function handleStatusFilterChange(status: Status | "") {
     setStatusFilter(status);
@@ -69,19 +66,37 @@ function App() {
     setTickets((current) => current.map((t) => (t.id === id ? { ...t, status } : t)));
     try {
       await updateTicket(id, { status });
+      loadStats();
     } catch (err) {
       setTickets(previous);
       setError(err instanceof Error ? err.message : "failed to update ticket");
     }
   }
 
+  async function handleTicketCreated() {
+    await loadTickets();
+    loadStats();
+  }
+
+  const totalTickets = stats ? stats.open + stats.in_progress + stats.closed : null;
+
   return (
     <div className="app">
-      <h1>Mini Ticket Tracker</h1>
+      <header className="topbar">
+        <div className="wordmark">
+          <span className="wordmark-mark">MTT</span>
+          <span className="wordmark-text">Mini Ticket Tracker</span>
+        </div>
+        {totalTickets !== null && (
+          <span className="topbar-count">
+            {totalTickets} ticket{totalTickets === 1 ? "" : "s"} tracked
+          </span>
+        )}
+      </header>
       {error && <p className="error">{error}</p>}
       <StatsBar stats={stats} />
       <div className="layout">
-        <TicketForm onCreated={loadTickets} />
+        <TicketForm onCreated={handleTicketCreated} />
         <TicketList
           tickets={tickets}
           page={page}

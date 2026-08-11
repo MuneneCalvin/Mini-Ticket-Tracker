@@ -37,28 +37,34 @@ export function TicketForm({ onCreated }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="ticket-form">
-      <h2>New ticket</h2>
+      <div className="panel-eyebrow">New</div>
+      <h2>Log a ticket</h2>
       <label>
         Title
-        <input value={title} onChange={(e) => setTitle(e.target.value)} required />
+        <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="What's broken?" required />
       </label>
       <label>
         Description
-        <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={3}
+          placeholder="Add detail an agent will need (optional)"
+        />
       </label>
       <label>
         Priority
-        <select value={priority} onChange={(e) => setPriority(e.target.value as Priority)}>
+        <select className="select-control" value={priority} onChange={(e) => setPriority(e.target.value as Priority)}>
           <option value="low">Low</option>
           <option value="medium">Medium</option>
           <option value="high">High</option>
         </select>
       </label>
-      {error && <p className="error">{error}</p>}
-      {justCreated && <p className="success">Ticket created.</p>}
-      <button type="submit" disabled={submitting}>
+      <button type="submit" className="btn-primary" disabled={submitting}>
         {submitting ? "Creating…" : "Create ticket"}
       </button>
+      {error && <p className="error">{error}</p>}
+      {justCreated && <p className="success">Ticket created.</p>}
     </form>
   );
 }
