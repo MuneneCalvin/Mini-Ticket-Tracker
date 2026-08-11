@@ -31,6 +31,21 @@ describe("POST /tickets", () => {
     expect(res.status).toBe(400);
     expect(res.body.error).toBeDefined();
   });
+
+  it("rejects an invalid priority value with 400", async () => {
+    const res = await request(app).post("/tickets").send({ title: "Bad priority", priority: "urgent" });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBeDefined();
+  });
+
+  it("rejects a title over the length limit with 400", async () => {
+    const res = await request(app)
+      .post("/tickets")
+      .send({ title: "a".repeat(201) });
+
+    expect(res.status).toBe(400);
+  });
 });
 
 describe("GET /tickets/stats", () => {
@@ -49,6 +64,65 @@ describe("GET /tickets/stats", () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ open: 2, in_progress: 1, closed: 1 });
   });
+
+  it("returns all-zero counts when there are no tickets", async () => {
+    const res = await request(app).get("/tickets/stats");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ open: 0, in_progress: 0, closed: 0 });
+  });
+});
+
+describe("GET /tickets", () => {
+  it("returns an empty list when there are no tickets", async () => {
+    const res = await request(app).get("/tickets");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ data: [], page: 1, limit: 20, total: 0 });
+  });
+
+  it("returns an empty page past the last page rather than erroring", async () => {
+    await prisma.ticket.create({ data: { title: "only ticket" } });
+
+    const res = await request(app).get("/tickets?page=5&limit=10");
+
+    expect(res.status).toBe(200);
+    expect(res.body.data).toEqual([]);
+    expect(res.body.total).toBe(1);
+  });
+
+  it("rejects an invalid status filter with 400", async () => {
+    const res = await request(app).get("/tickets?status=urgent");
+
+    expect(res.status).toBe(400);
+  });
+
+  it("filters by title search substring, case-insensitive", async () => {
+    await prisma.ticket.createMany({
+      data: [{ title: "Printer on fire" }, { title: "VPN dropping" }],
+    });
+
+    const res = await request(app).get("/tickets?search=printer");
+
+    expect(res.status).toBe(200);
+    expect(res.body.data).toHaveLength(1);
+    expect(res.body.data[0].title).toBe("Printer on fire");
+  });
+
+  it("sorts by priority with high first when sort=priority", async () => {
+    await prisma.ticket.createMany({
+      data: [
+        { title: "low one", priority: "low" },
+        { title: "high one", priority: "high" },
+        { title: "medium one", priority: "medium" },
+      ],
+    });
+
+    const res = await request(app).get("/tickets?sort=priority");
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.map((t: { priority: string }) => t.priority)).toEqual(["high", "medium", "low"]);
+  });
 });
 
 describe("PATCH /tickets/:id", () => {
@@ -65,5 +139,21 @@ describe("PATCH /tickets/:id", () => {
     const res = await request(app).patch("/tickets/999999").send({ status: "closed" });
 
     expect(res.status).toBe(404);
+  });
+
+  it("rejects an invalid status value with 400", async () => {
+    const created = await prisma.ticket.create({ data: { title: "Fix leak" } });
+
+    const res = await request(app).patch(`/tickets/${created.id}`).send({ status: "urgent" });
+
+    expect(res.status).toBe(400);
+  });
+
+  it("rejects a body with neither status nor priority with 400", async () => {
+    const created = await prisma.ticket.create({ data: { title: "Fix leak" } });
+
+    const res = await request(app).patch(`/tickets/${created.id}`).send({});
+
+    expect(res.status).toBe(400);
   });
 });
