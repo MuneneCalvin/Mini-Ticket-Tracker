@@ -13,10 +13,12 @@ export function TicketForm({ onCreated }: Props) {
   const [priority, setPriority] = useState<Priority>("medium");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [justCreated, setJustCreated] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    setJustCreated(false);
     setSubmitting(true);
     try {
       await createTicket({ title, description: description || undefined, priority });
@@ -24,6 +26,8 @@ export function TicketForm({ onCreated }: Props) {
       setDescription("");
       setPriority("medium");
       onCreated();
+      setJustCreated(true);
+      setTimeout(() => setJustCreated(false), 2500);
     } catch (err) {
       setError(err instanceof Error ? err.message : "failed to create ticket");
     } finally {
@@ -51,6 +55,7 @@ export function TicketForm({ onCreated }: Props) {
         </select>
       </label>
       {error && <p className="error">{error}</p>}
+      {justCreated && <p className="success">Ticket created.</p>}
       <button type="submit" disabled={submitting}>
         {submitting ? "Creating…" : "Create ticket"}
       </button>

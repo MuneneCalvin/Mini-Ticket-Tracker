@@ -1,5 +1,6 @@
 export type Status = "open" | "in_progress" | "closed";
 export type Priority = "low" | "medium" | "high";
+export type Sort = "created_desc" | "created_asc" | "priority";
 
 export interface Ticket {
   id: number;
@@ -29,13 +30,21 @@ async function handle<T>(res: Response): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-export function fetchTickets(params: { status?: Status | ""; page?: number; limit?: number }): Promise<TicketListResponse> {
-  const search = new URLSearchParams();
-  if (params.status) search.set("status", params.status);
-  if (params.page) search.set("page", String(params.page));
-  if (params.limit) search.set("limit", String(params.limit));
+export function fetchTickets(params: {
+  status?: Status | "";
+  page?: number;
+  limit?: number;
+  search?: string;
+  sort?: Sort;
+}): Promise<TicketListResponse> {
+  const query = new URLSearchParams();
+  if (params.status) query.set("status", params.status);
+  if (params.page) query.set("page", String(params.page));
+  if (params.limit) query.set("limit", String(params.limit));
+  if (params.search) query.set("search", params.search);
+  if (params.sort) query.set("sort", params.sort);
 
-  return fetch(`${API_URL}/tickets?${search}`).then((res) => handle<TicketListResponse>(res));
+  return fetch(`${API_URL}/tickets?${query}`).then((res) => handle<TicketListResponse>(res));
 }
 
 export function fetchStats(): Promise<Stats> {

@@ -45,6 +45,26 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.ticket-list-controls {
+  display: flex;
+  align-items: end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.ticket-list-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.8rem;
+}
+
+.ticket-list-controls input[type="search"] {
+  margin-top: auto;
 }
 
 table {
@@ -89,4 +109,8 @@ td {
 
 .error {
   color: #b00020;
+}
+
+.success {
+  color: #1a7f37;
 }
