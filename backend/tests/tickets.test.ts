@@ -149,11 +149,49 @@ describe("PATCH /tickets/:id", () => {
     expect(res.status).toBe(400);
   });
 
-  it("rejects a body with neither status nor priority with 400", async () => {
+  it("rejects an empty body with 400", async () => {
     const created = await prisma.ticket.create({ data: { title: "Fix leak" } });
 
     const res = await request(app).patch(`/tickets/${created.id}`).send({});
 
     expect(res.status).toBe(400);
+  });
+
+  it("updates title and description", async () => {
+    const created = await prisma.ticket.create({ data: { title: "Fix leak" } });
+
+    const res = await request(app)
+      .patch(`/tickets/${created.id}`)
+      .send({ title: "Fix the leak in room 4", description: "Under the sink" });
+
+    expect(res.status).toBe(200);
+    expect(res.body.title).toBe("Fix the leak in room 4");
+    expect(res.body.description).toBe("Under the sink");
+  });
+
+  it("rejects an empty title with 400", async () => {
+    const created = await prisma.ticket.create({ data: { title: "Fix leak" } });
+
+    const res = await request(app).patch(`/tickets/${created.id}`).send({ title: "   " });
+
+    expect(res.status).toBe(400);
+  });
+});
+
+describe("DELETE /tickets/:id", () => {
+  it("deletes an existing ticket", async () => {
+    const created = await prisma.ticket.create({ data: { title: "Fix leak" } });
+
+    const res = await request(app).delete(`/tickets/${created.id}`);
+    expect(res.status).toBe(204);
+
+    const stillThere = await prisma.ticket.findUnique({ where: { id: created.id } });
+    expect(stillThere).toBeNull();
+  });
+
+  it("returns 404 for a non-existent ticket", async () => {
+    const res = await request(app).delete("/tickets/999999");
+
+    expect(res.status).toBe(404);
   });
 });

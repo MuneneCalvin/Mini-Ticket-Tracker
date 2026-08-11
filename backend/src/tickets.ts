@@ -21,11 +21,13 @@ const createTicketSchema = z.object({
 
 const patchTicketSchema = z
   .object({
+    title: z.string().trim().min(1, "title cannot be empty").max(TITLE_MAX_LENGTH, `title must be ${TITLE_MAX_LENGTH} characters or fewer`).optional(),
+    description: z.string().trim().max(DESCRIPTION_MAX_LENGTH, `description must be ${DESCRIPTION_MAX_LENGTH} characters or fewer`).optional(),
     status: z.enum(statusValues).optional(),
     priority: z.enum(priorityValues).optional(),
   })
-  .refine((body) => body.status !== undefined || body.priority !== undefined, {
-    message: "at least one of status or priority is required",
+  .refine((body) => Object.keys(body).length > 0, {
+    message: "at least one of title, description, status, or priority is required",
   });
 
 const sortValues = ["created_desc", "created_asc", "priority"] as const;
@@ -117,4 +119,19 @@ ticketsRouter.patch("/:id", async (req, res) => {
 
   const ticket = await prisma.ticket.update({ where: { id }, data: parsed.data });
   res.json(ticket);
+});
+
+ticketsRouter.delete("/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    return res.status(400).json({ error: "invalid ticket id" });
+  }
+
+  const existing = await prisma.ticket.findUnique({ where: { id } });
+  if (!existing) {
+    return res.status(404).json({ error: "ticket not found" });
+  }
+
+  await prisma.ticket.delete({ where: { id } });
+  res.status(204).send();
 });
