@@ -63,8 +63,13 @@ Requires Node 20+ and Docker.
   - `search` — case-insensitive substring match on title
   - `sort` — `created_desc` (default), `created_asc`, or `priority` (high first)
   - `page` / `limit` — offset pagination (default `page=1`, `limit=20`, max `limit=100`)
-- `PATCH /tickets/:id` — update `status` and/or `priority`
+- `PATCH /tickets/:id` — update any of `title`, `description`, `status`, `priority` (at least one required)
+- `DELETE /tickets/:id` — delete a ticket, `204` on success
 - `GET /tickets/stats` — ticket counts grouped by status (all three statuses always present, zero-filled)
+
+## UI
+
+Click a ticket row to open a detail view with its full description, or use the status dropdown inline in the table for a quick status change without leaving the list. Creating, editing, and deleting all happen in modals. Delete is confirmed before it fires; status/priority changes from the table are intentionally not confirmed — they're the highest-frequency action and reversible with one more click.
 
 ## Decisions & Tradeoffs
 

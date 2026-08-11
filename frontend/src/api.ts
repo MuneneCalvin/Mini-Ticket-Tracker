@@ -59,10 +59,21 @@ export function createTicket(input: { title: string; description?: string; prior
   }).then((res) => handle<Ticket>(res));
 }
 
-export function updateTicket(id: number, input: { status?: Status; priority?: Priority }): Promise<Ticket> {
+export function updateTicket(
+  id: number,
+  input: { title?: string; description?: string; status?: Status; priority?: Priority },
+): Promise<Ticket> {
   return fetch(`${API_URL}/tickets/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
   }).then((res) => handle<Ticket>(res));
+}
+
+export async function deleteTicket(id: number): Promise<void> {
+  const res = await fetch(`${API_URL}/tickets/${id}`, { method: "DELETE" });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(body.error ?? "request failed");
+  }
 }

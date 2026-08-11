@@ -13,6 +13,7 @@ interface Props {
   onSearchInputChange: (search: string) => void;
   onPageChange: (page: number) => void;
   onStatusChange: (id: number, status: Status) => void;
+  onRowClick: (ticket: Ticket) => void;
 }
 
 const STATUS_OPTIONS: Status[] = ["open", "in_progress", "closed"];
@@ -56,6 +57,7 @@ export function TicketList({
   onSearchInputChange,
   onPageChange,
   onStatusChange,
+  onRowClick,
 }: Props) {
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const isFiltered = statusFilter !== "" || searchInput.trim() !== "";
@@ -114,13 +116,13 @@ export function TicketList({
           </thead>
           <tbody>
             {tickets.map((t) => (
-              <tr key={t.id}>
+              <tr key={t.id} className="ticket-row" onClick={() => onRowClick(t)}>
                 <td className="col-id mono">#{String(t.id).padStart(2, "0")}</td>
                 <td className="col-title">{t.title}</td>
                 <td>
                   <span className={`badge priority-${t.priority}`}>{t.priority}</span>
                 </td>
-                <td>
+                <td onClick={(e) => e.stopPropagation()}>
                   <select
                     className={`select-control status-select status-${t.status}`}
                     value={t.status}
@@ -141,7 +143,7 @@ export function TicketList({
             {tickets.length === 0 && (
               <tr>
                 <td colSpan={5} className="empty-state">
-                  {isFiltered ? "No tickets match. Try clearing the search or status filter." : "No tickets yet. Create the first one on the left."}
+                  {isFiltered ? "No tickets match. Try clearing the search or status filter." : "No tickets yet. Create the first one to get started."}
                 </td>
               </tr>
             )}
